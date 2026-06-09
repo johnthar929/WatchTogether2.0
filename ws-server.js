@@ -8,7 +8,7 @@ const rooms = {};
 
 wss.on("connection", (ws) => {
 
-```
+
 let room = "";
 
 ws.on("message", (msg) => {
@@ -70,7 +70,7 @@ ws.on("close", () => {
     }
 
 });
-```
+
 
 });
 
