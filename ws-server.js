@@ -1,78 +1,130 @@
 const WebSocket =
-require('ws');
+require("ws");
 
 const wss =
 new WebSocket.Server({
-
 port:
-process.env.PORT || 8080
-
+process.env.PORT ||
+8080
 });
 
-const rooms={};
+const rooms = {};
 
-wss.on('connection',ws=>{
+wss.on(
+"connection",
+ws => {
 
-let room='';
+```
+    let room = "";
 
-ws.on('message',msg=>{
+    ws.on(
+        "message",
+        msg => {
 
-let data=
-JSON.parse(msg);
+            let data;
 
-if(data.type==='join'){
+            try {
 
-room=data.room;
+                data =
+                    JSON.parse(
+                        msg
+                    );
 
-if(!rooms[room])
-rooms[room]=[];
+            } catch {
 
-rooms[room].push(ws);
+                return;
+            }
 
-return;
+            if (
+                data.type ===
+                "join"
+            ) {
 
+                room =
+                    data.room;
+
+                if (
+                    !rooms[room]
+                ) {
+
+                    rooms[room] =
+                        [];
+                }
+
+                rooms[room]
+                    .push(ws);
+
+                return;
+            }
+
+            if (
+                !rooms[room]
+            ) {
+                return;
+            }
+
+            rooms[room]
+                .forEach(
+                    client => {
+
+                        if (
+                            client !==
+                                ws &&
+                            client
+                                .readyState ===
+                                WebSocket
+                                    .OPEN
+                        ) {
+
+                            client.send(
+                                JSON.stringify(
+                                    data
+                                )
+                            );
+                        }
+                    }
+                );
+        }
+    );
+
+    ws.on(
+        "close",
+        () => {
+
+            if (
+                rooms[room]
+            ) {
+
+                rooms[
+                    room
+                ] =
+                    rooms[
+                        room
+                    ].filter(
+                        c =>
+                            c !==
+                            ws
+                    );
+
+                if (
+                    rooms[
+                        room
+                    ].length ===
+                    0
+                ) {
+
+                    delete rooms[
+                        room
+                    ];
+                }
+            }
+        }
+    );
 }
+```
 
-if(!rooms[room])
-return;
-
-rooms[room]
-.forEach(client=>{
-
-if(
-client!==ws &&
-client.readyState===
-WebSocket.OPEN
-){
-
-client.send(
-JSON.stringify(data)
 );
-
-}
-
-});
-
-});
-
-ws.on('close',()=>{
-
-if(
-rooms[room]
-){
-
-rooms[room]=
-rooms[room]
-.filter(
-c=>c!==ws
-);
-
-}
-
-});
-
-});
 
 console.log(
-'WebSocket running'
+"WebSocket running"
 );
